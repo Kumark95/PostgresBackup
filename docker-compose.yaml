@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  database-backup:
+    image: prodrigestivill/postgres-backup-local:12-alpine
+    container_name: database-backup
+    restart: always
+    volumes:
+      - ./backups:/backups
+    environment:
+      # Access
+      - POSTGRES_HOST=$POSTGRES_HOST
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USERNAME
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+
+      # Extra arguments for pg_dump
+      - POSTGRES_EXTRA_OPTS=--exclude-schema=public --compress=9
+
+      # Scheduling
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+
+      # Cron healthchecks
+      - HEALTHCHECK_PORT=80
+    networks: 
+      - ran-database-access-network
+
+networks:
+  ran-database-access-network:
+    external: true
